@@ -43,8 +43,6 @@ void setup() {
   delay(2000);
 
   spinner = new Spinner(NUM_LEDS, leds, blue);
-  spinner->setLengthMinMax(12, 12);
-  spinner->setIntervalMinMax(30, 30);
 
   sparkle = new Sparkle(1, NUM_LEDS, leds, pink, 450);
 
