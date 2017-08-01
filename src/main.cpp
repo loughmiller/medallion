@@ -27,7 +27,7 @@ void setAll(CRGB color);
 
 CRGB pink = 0xFF0B20;
 CRGB blue = 0x0BFFDD;
-CRGB white = 0xFFFFFF;
+CRGB white = 0x080808;
 
 uint8_t spinnerHue;
 uint8_t sparkleHue;
@@ -103,7 +103,7 @@ void loop() {
 
   if (touchRead(FLASHLIGHT_CONTROL_PIN) > TOUCH_SENSITIVITY) {
     flashlight = true;
-    setAll(0xFFFFFF);
+    setAll(white);
     FastLED.show();
     delay(1000);
   }
@@ -117,7 +117,7 @@ void loop() {
       FastLED.show();
       delay(1000);
     } else {
-      setAll(0xFFFFFF);
+      setAll(white);
       FastLED.show();
       return;
     }
