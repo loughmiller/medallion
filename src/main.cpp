@@ -3,13 +3,21 @@
 #include <Visualization.h>
 #include <Spinner.h>
 #include <Sparkle.h>
+#include <SoundReaction.h>
+#include <TeensyAudioFFT.h>
 
 // FAST LED
 #define NUM_LEDS 24
-#define DISPLAY_LED_PIN 22
+// #define DISPLAY_LED_PIN 22  // VERSION 1
+#define DISPLAY_LED_PIN 4      // VERSION 2
+// #define DISPLAY_LED_PIN 23  // STAFF
+// #define DISPLAY_LED_PIN 5   // LANTERN
 #define SPARKLE_CONTROL_PIN 1
 #define SPINNER_CONTROL_PIN 15
 #define FLASHLIGHT_CONTROL_PIN 23
+
+#define AUDIO_INPUT_PIN A7  // MEDALLION
+// #define AUDIO_INPUT_PIN A0  // STAFF
 
 #define TOUCH_SENSITIVITY 700
 
@@ -41,6 +49,9 @@ CRGB sparkleRGBColor;
 Spinner * spinner;
 Sparkle * sparkle;
 
+SoundReaction * soundReaction;
+
+
 uint16_t interval = 50;
 uint32_t nextTime = 0;
 
@@ -60,22 +71,29 @@ void setup() {
   Serial.begin(9600);
   Serial.println("setup started");
 
-  randomSeed(analogRead(14));
+  randomSeed(analogRead(15));
+
+  // AUDIO setup
+  TeensyAudioFFTSetup(AUDIO_INPUT_PIN);
+  samplingBegin();
 
   // DISPLAY STUFF
   off = 0x000000;
-  FastLED.addLeds<NEOPIXEL, DISPLAY_LED_PIN>(leds, NUM_LEDS).setCorrection( Typical8mmPixel );;
+  FastLED.addLeds<NEOPIXEL, DISPLAY_LED_PIN>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );;
 
   FastLED.setBrightness(64);
-  setAll(white.fadeLightBy(244));
+  FastLED.setDither(0);
+  setAll(white);
   FastLED.show();
   delay(2000);
 
   spinner = new Spinner(NUM_LEDS, leds, blue);
   sparkle = new Sparkle(1, NUM_LEDS, leds, pink, 450);
+  soundReaction = new SoundReaction(0, 24, leds, pink, 0x000000);
 
   randomTimeOffset = random(SPINNER_SPEED*SPARKLE_SPEED);
   Serial.println(randomTimeOffset);
+  Serial.println(audioInputPin);
   Serial.println("setup complete");
 }
 
@@ -88,6 +106,7 @@ void loop() {
     spinnerHSVColor = CHSV(spinnerHue, SATURATION, VALUE);
     hsv2rgb_rainbow( spinnerHSVColor, spinnerRGBColor);
     spinner->setColor(spinnerRGBColor);
+    soundReaction->setOnColor(spinnerRGBColor);
   }
 
   if (sparkleColorCycle) {
@@ -159,8 +178,10 @@ void loop() {
     return;
   }
 
+  float intensity = readRelativeIntensity(currentTime, 2, 4);
+  soundReaction->display(min(intensity, 1));
 
-  spinner->display(currentTime);
+  // spinner->display(currentTime);
   sparkle->display();
 
   FastLED.show();
