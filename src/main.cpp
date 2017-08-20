@@ -3,7 +3,7 @@
 #include <Visualization.h>
 #include <Spinner.h>
 #include <Sparkle.h>
-#include <SoundReaction.h>
+#include <Spectrum.h>
 #include <TeensyAudioFFT.h>
 
 // FAST LED
@@ -49,8 +49,9 @@ CRGB sparkleRGBColor;
 Spinner * spinner;
 Sparkle * sparkle;
 
-SoundReaction * soundReaction;
+Spectrum * spectrum;
 
+TeensyAudioFFT * taFFT;
 
 uint16_t interval = 50;
 uint32_t nextTime = 0;
@@ -76,6 +77,7 @@ void setup() {
   // AUDIO setup
   TeensyAudioFFTSetup(AUDIO_INPUT_PIN);
   samplingBegin();
+  taFFT = new TeensyAudioFFT();
 
   // DISPLAY STUFF
   off = 0x000000;
@@ -89,7 +91,7 @@ void setup() {
 
   spinner = new Spinner(NUM_LEDS, leds, blue);
   sparkle = new Sparkle(1, NUM_LEDS, leds, pink, 450);
-  soundReaction = new SoundReaction(0, 24, leds, pink, 0x000000);
+  spectrum = new Spectrum(1, NUM_LEDS, 0, false, leds, 137, 100);
 
   randomTimeOffset = random(SPINNER_SPEED*SPARKLE_SPEED);
   Serial.println(randomTimeOffset);
@@ -106,7 +108,6 @@ void loop() {
     spinnerHSVColor = CHSV(spinnerHue, SATURATION, VALUE);
     hsv2rgb_rainbow( spinnerHSVColor, spinnerRGBColor);
     spinner->setColor(spinnerRGBColor);
-    soundReaction->setOnColor(spinnerRGBColor);
   }
 
   if (sparkleColorCycle) {
@@ -178,10 +179,13 @@ void loop() {
     return;
   }
 
-  float intensity = readRelativeIntensity(currentTime, 2, 4);
-  soundReaction->display(min(intensity, 1));
+
+  taFFT->loop();
+  taFFT->updateRelativeIntensities(currentTime);
+  spectrum->display(taFFT->intensities);
 
   // spinner->display(currentTime);
+
   sparkle->display();
 
   FastLED.show();
