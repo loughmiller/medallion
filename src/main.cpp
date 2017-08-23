@@ -131,7 +131,7 @@ void loop() {
       spinner->setHue(spinnerHue);
     }
 
-    all->setAllHue(spinnerHue);
+    spinner->setAllHue(spinnerHue);
     FastLED.show();
     return;
   }
@@ -147,7 +147,7 @@ void loop() {
       sparkle->setHue(sparkleHue);
     }
 
-    all->setAllHue(spinnerHue);
+    sparkle->setAllHue(sparkleHue);
     FastLED.show();
     return;
   }
