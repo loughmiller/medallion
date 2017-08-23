@@ -3,8 +3,6 @@
 #include <Visualization.h>
 #include <Spinner.h>
 #include <Sparkle.h>
-#include <Spectrum.h>
-#include <TeensyAudioFFT.h>
 
 // FAST LED
 #define NUM_LEDS 24
@@ -12,8 +10,6 @@
 #define SPARKLE_CONTROL_PIN 1
 #define SPINNER_CONTROL_PIN 15
 #define FLASHLIGHT_CONTROL_PIN 23
-
-#define AUDIO_INPUT_PIN A7  // MEDALLION
 
 #define TOUCH_SENSITIVITY 700
 
@@ -30,9 +26,6 @@ uint8_t sparkleHue;
 Visualization * all;
 Spinner * spinner;
 Sparkle * sparkle;
-// Spectrum * spectrum;
-
-TeensyAudioFFT * taFFT;
 
 uint16_t interval = 50;
 uint32_t nextTime = 0;
@@ -55,11 +48,6 @@ void setup() {
 
   randomSeed(analogRead(15));
 
-  // AUDIO setup
-  TeensyAudioFFTSetup(AUDIO_INPUT_PIN);
-  samplingBegin();
-  taFFT = new TeensyAudioFFT();
-
   // DISPLAY STUFF
   FastLED.addLeds<NEOPIXEL, DISPLAY_LED_PIN>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );;
   all = new Visualization(NUM_LEDS, 1, 0, 0, leds);
@@ -72,11 +60,9 @@ void setup() {
 
   spinner = new Spinner(NUM_LEDS, 0, SATURATION, leds);
   sparkle = new Sparkle(NUM_LEDS, 0, SATURATION, leds, 231);
-//  spectrum = new Spectrum(1, NUM_LEDS, 0, false, leds, 137, 100);
 
   randomTimeOffset = random(SPINNER_SPEED*SPARKLE_SPEED);
   Serial.println(randomTimeOffset);
-  Serial.println(audioInputPin);
   Serial.println("setup complete");
 }
 
@@ -131,7 +117,7 @@ void loop() {
       spinner->setHue(spinnerHue);
     }
 
-    all->setAllHue(spinnerHue);
+    spinner->setAllHue(spinnerHue);
     FastLED.show();
     return;
   }
@@ -147,15 +133,11 @@ void loop() {
       sparkle->setHue(sparkleHue);
     }
 
-    all->setAllHue(spinnerHue);
+    sparkle->setAllHue(sparkleHue);
     FastLED.show();
     return;
   }
 
-
-  taFFT->loop();
-  taFFT->updateRelativeIntensities(currentTime);
-  // spectrum->display(taFFT->intensities);
 
   spinner->display(currentTime);
 
